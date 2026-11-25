@@ -1,0 +1,291 @@
+{
+  "agreement": {
+    "kind": "AIR",
+    "profiles": {
+      "air-c": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x4c7cb73ac8f8999af21cfc9ff4cf2333a9508dcb",
+        "site": "room-1",
+        "source_id": "air-c",
+        "status": "ACTIVE",
+        "unit": "C"
+      },
+      "air-f": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0xd6b8a3a5eb329410d9504784812b8569afa8c2af",
+        "site": "room-1",
+        "source_id": "air-f",
+        "status": "ACTIVE",
+        "unit": "F"
+      }
+    },
+    "quorum": 2,
+    "reports": {
+      "air-c": {
+        "center_ticks": 2638350,
+        "lower_ticks": 2633850,
+        "source_id": "air-c",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2642850,
+        "value_milli": 20000
+      },
+      "air-f": {
+        "center_ticks": 2642850,
+        "lower_ticks": 2638350,
+        "source_id": "air-f",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 900,
+        "upper_ticks": 2647350,
+        "value_milli": 68900
+      }
+    },
+    "result": {
+      "excluded": [],
+      "interval": [
+        2638350,
+        2642850
+      ],
+      "peak_support": 2,
+      "quorum": 2,
+      "status": "AGREEMENT",
+      "supporters": [
+        "air-c",
+        "air-f"
+      ],
+      "ticks_per_kelvin": 9000
+    },
+    "round_id": "agreement",
+    "site": "room-1",
+    "status": "AGREEMENT"
+  },
+  "conflict": {
+    "kind": "AIR",
+    "profiles": {
+      "air-c": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x4c7cb73ac8f8999af21cfc9ff4cf2333a9508dcb",
+        "site": "room-1",
+        "source_id": "air-c",
+        "status": "ACTIVE",
+        "unit": "C"
+      },
+      "air-f": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0xd6b8a3a5eb329410d9504784812b8569afa8c2af",
+        "site": "room-1",
+        "source_id": "air-f",
+        "status": "ACTIVE",
+        "unit": "F"
+      }
+    },
+    "quorum": 2,
+    "reports": {
+      "air-c": {
+        "center_ticks": 2638350,
+        "lower_ticks": 2633850,
+        "source_id": "air-c",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2642850,
+        "value_milli": 20000
+      },
+      "air-f": {
+        "center_ticks": 2748350,
+        "lower_ticks": 2743850,
+        "source_id": "air-f",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 900,
+        "upper_ticks": 2752850,
+        "value_milli": 90000
+      }
+    },
+    "result": {
+      "interval": null,
+      "peak_support": 1,
+      "quorum": 2,
+      "status": "CONFLICT",
+      "ticks_per_kelvin": 9000
+    },
+    "round_id": "conflict",
+    "site": "room-1",
+    "status": "CONFLICT"
+  },
+  "majority_before_replay": {
+    "kind": "AIR",
+    "profiles": {
+      "air-c": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x4c7cb73ac8f8999af21cfc9ff4cf2333a9508dcb",
+        "site": "room-1",
+        "source_id": "air-c",
+        "status": "ACTIVE",
+        "unit": "C"
+      },
+      "air-f": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0xd6b8a3a5eb329410d9504784812b8569afa8c2af",
+        "site": "room-1",
+        "source_id": "air-f",
+        "status": "ACTIVE",
+        "unit": "F"
+      },
+      "air-k": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x60bfdf6315294c7856acdc0b80d7bd40217debff",
+        "site": "room-1",
+        "source_id": "air-k",
+        "status": "ACTIVE",
+        "unit": "K"
+      }
+    },
+    "quorum": 2,
+    "reports": {
+      "air-c": {
+        "center_ticks": 2638350,
+        "lower_ticks": 2633850,
+        "source_id": "air-c",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2642850,
+        "value_milli": 20000
+      },
+      "air-f": {
+        "center_ticks": 2642850,
+        "lower_ticks": 2638350,
+        "source_id": "air-f",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 900,
+        "upper_ticks": 2647350,
+        "value_milli": 68900
+      },
+      "air-k": {
+        "center_ticks": 2790000,
+        "lower_ticks": 2785500,
+        "source_id": "air-k",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2794500,
+        "value_milli": 310000
+      }
+    },
+    "result": {
+      "excluded": [
+        "air-k"
+      ],
+      "interval": [
+        2638350,
+        2642850
+      ],
+      "peak_support": 2,
+      "quorum": 2,
+      "status": "AGREEMENT",
+      "supporters": [
+        "air-c",
+        "air-f"
+      ],
+      "ticks_per_kelvin": 9000
+    },
+    "round_id": "majority",
+    "site": "room-1",
+    "status": "AGREEMENT"
+  },
+  "majority_after_replay": {
+    "kind": "AIR",
+    "profiles": {
+      "air-c": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x4c7cb73ac8f8999af21cfc9ff4cf2333a9508dcb",
+        "site": "room-1",
+        "source_id": "air-c",
+        "status": "ACTIVE",
+        "unit": "C"
+      },
+      "air-f": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0xd6b8a3a5eb329410d9504784812b8569afa8c2af",
+        "site": "room-1",
+        "source_id": "air-f",
+        "status": "ACTIVE",
+        "unit": "F"
+      },
+      "air-k": {
+        "kind": "AIR",
+        "label": "Absolute temperature of room air",
+        "owner": "0x60bfdf6315294c7856acdc0b80d7bd40217debff",
+        "site": "room-1",
+        "source_id": "air-k",
+        "status": "ACTIVE",
+        "unit": "K"
+      }
+    },
+    "quorum": 2,
+    "reports": {
+      "air-c": {
+        "center_ticks": 2638350,
+        "lower_ticks": 2633850,
+        "source_id": "air-c",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2642850,
+        "value_milli": 20000
+      },
+      "air-f": {
+        "center_ticks": 2642850,
+        "lower_ticks": 2638350,
+        "source_id": "air-f",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 900,
+        "upper_ticks": 2647350,
+        "value_milli": 68900
+      },
+      "air-k": {
+        "center_ticks": 2790000,
+        "lower_ticks": 2785500,
+        "source_id": "air-k",
+        "ticks_per_kelvin": 9000,
+        "uncertainty_milli": 500,
+        "upper_ticks": 2794500,
+        "value_milli": 310000
+      }
+    },
+    "result": {
+      "excluded": [
+        "air-k"
+      ],
+      "interval": [
+        2638350,
+        2642850
+      ],
+      "peak_support": 2,
+      "quorum": 2,
+      "status": "AGREEMENT",
+      "supporters": [
+        "air-c",
+        "air-f"
+      ],
+      "ticks_per_kelvin": 9000
+    },
+    "round_id": "majority",
+    "site": "room-1",
+    "status": "AGREEMENT"
+  },
+  "unclear": {
+    "kind": "REVIEW",
+    "label": "Temperature change or apparent temperature",
+    "owner": "0x60bfdf6315294c7856acdc0b80d7bd40217debff",
+    "site": "room-1",
+    "source_id": "unclear",
+    "status": "REVIEW",
+    "unit": "C"
+  }
+}

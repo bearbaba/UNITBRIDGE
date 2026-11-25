@@ -5,6 +5,10 @@ Two Intelligent Contracts bridge heterogeneous temperature telemetry without a d
 - **UnitBridge** registers immutable source profiles. GenLayer leader and independent validators classify a single-line sensor description as absolute AIR, SURFACE, LIQUID or REVIEW. Explicit C/F/K units are not inferred. Exact affine conversion produces integer ticks (1 tick = 1/9000 K) and uncertainty intervals.
 - **SensorFusion** pins the actual registry contract. A round selects 2–5 active source IDs, distinct wallet owners, the same declared site and semantic kind, and a strict majority quorum. Each owner submits a reading once. When all submit, deterministic interval sweep identifies the unique maximum-support interval, reports excluded sources, or returns CONFLICT / REVIEW without a fabricated aggregate. No signer approves another's reading.
 
+## Live Studionet evidence
+
+15 finalized calls across two contracts and three distinct wallet addresses: 14 successful executions and one expected post-finalization replay rollback. Three round readbacks demonstrate AGREEMENT, CONFLICT and majority outlier exclusion; ambiguous source persisted as REVIEW. After replay rejection, the majority readback was unchanged. See [all hashes and Studio links](docs/evidence.md), [captured JSON](docs/readbacks-2026-11-25.json) and [7 passing CI tests](https://github.com/bearbaba/UNITBRIDGE/actions/runs/45569760724). Evidence is developer-captured, not independent RPC verification.
+
 ## Live walkthrough
 See [Studio steps](docs/walkthrough.md) and [evidence](docs/evidence.md). All inputs fit single-line Studio fields; integers represent thousandths of the declared unit. No frontend, API keys, payments or mainnet.
 
