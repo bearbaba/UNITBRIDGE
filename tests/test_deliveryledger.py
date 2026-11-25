@@ -1,10 +1,9 @@
 import hashlib
 import json
-from genlayer.types import Address
 
 
 def seal(data,cert):
-    data=dict(data)
+    data={k:v for k,v in data.items() if k!='input_sha256'}
     data["input_sha256"]=hashlib.sha256(json.dumps(data,sort_keys=True).encode("utf-8")).hexdigest()
     return data,dict(cert,case_id=data["case_id"],input_sha256=data["input_sha256"])
 
@@ -19,9 +18,10 @@ def mock_view(monkeypatch, records, protocol):
     monkeypatch.setattr(gl.contract,"get_at",lambda _:View())
 
 def setup(vm,deploy,alice,bob,monkeypatch):
+    c=deploy("contracts/DeliveryLedger.py","0x"+"9"*40)
+    from genlayer.types import Address
     owner=Address(alice).as_hex.lower()
     other=Address(bob).as_hex.lower()
-    c=deploy("contracts/DeliveryLedger.py","0x"+"9"*40)
     records={}
     for cid,rid,amount,order in (("part1","R1",3000000,"Order: PO1"),("part2","R2",3000000,"Order: PO1"),("duplicate","R1",3000000,"Order: PO1"),("wrong","R3",3000000,"Order: OTHER")):
         records[cid]=seal({"case_id":cid,"owner":owner,"order_id":"PO1","receipt_id":rid,"sku":"SKU-A","order":order,"receipt":"Receipt: "+rid,"spec":"spec"},{"sku":"SKU-A","status":"SHORTFALL","delta_mg":amount-5500000,"facts":{"status":"READY","required_mg":5500000,"delivered_mg":amount}})
