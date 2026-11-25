@@ -16,7 +16,7 @@ def valid_id(value: str) -> bool:
 
 def consensus(prompt, normalize):
     """Compare independently extracted material facts, not free-form prose."""
-    def extract():
+    def leader():
         for attempt in range(2):
             try:
                 raw = gl.nondet.exec_prompt(prompt + ("\nReturn JSON only." if attempt else ""), response_format="json")
@@ -25,20 +25,19 @@ def consensus(prompt, normalize):
                 pass
         raise gl.vm.UserError("No valid grounded extraction")
 
-    def leader():
-        return extract()
-
     def validator(result):
         if not isinstance(result, gl.vm.Return):
             return False
-        try:
-            # Result is canonical and already derived from frozen input.
-            # The validator recomputes the entire result independently.
-            return result.calldata == extract()
-        except gl.vm.UserError:
-            return False
+        for attempt in range(2):
+            try:
+                raw = gl.nondet.exec_prompt(prompt + ("\nReturn JSON only." if attempt else ""), response_format="json")
+                return result.calldata == normalize(raw)
+            except (gl.nondet.NondetException, ValueError, KeyError, TypeError, OverflowError):
+                pass
+        return False
 
     return gl.vm.run_nondet(leader, validator)
+
 
 MASS = {"mg":1,"g":1000,"kg":1000000}
 PACK = ("carton","pack","case","box","bag","pallet","unit")
@@ -80,8 +79,24 @@ def unit_pattern(unit):
 
 
 def pair(q, amount, unit):
-    if not isinstance(amount, str) or not re.search(r"(?<![\w.,])" + re.escape(amount) + r"\s+" + unit_pattern(unit) + r"\b", q.lower()):
+    if not isinstance(amount, str) or not re.search(r"(?<![\w.,+-])" + re.escape(amount) + r"\s+" + unit_pattern(unit) + r"\b", q.lower()):
         raise ValueError("Quantity not found in exact source line")
+
+
+def unqualified(q):
+    if re.search(r"\b(?:unless|except|if|not|never|returned|rejected|cancelled|canceled|expected|forecast|planned|pending|estimated|damaged|maximum|approximately)\b|\bup to\b", q.lower()):
+        raise ValueError("Conditional or unsupported quantity")
+
+
+def item_lines(doc, sku):
+    pattern = r"(?<![A-Za-z0-9_-])" + re.escape(sku) + r"(?![A-Za-z0-9_-])"
+    return [q for q in doc.splitlines() if re.search(pattern, q)]
+
+
+def mass_pair(q, amount, unit):
+    token = re.escape(amount) + r"\s+" + unit_pattern(unit)
+    if not re.search(r"(?<![\w.,+-])" + token + r"\s+net\b|\bnet (?:mass|weight)\s+" + token + r"\b", q.lower()):
+        raise ValueError("Net basis must be attached to quantity")
 
 
 def net(q):
@@ -108,13 +123,22 @@ def normalize_facts(raw, data):
     fields(rec, ("line","amount","unit"))
     rq = evidence(data["order"], req["line"], data["sku"])
     dq = evidence(data["receipt"], rec["line"], data["sku"])
+    if len(item_lines(data["order"], data["sku"])) != 1 or len(item_lines(data["receipt"], data["sku"])) != 1:
+        raise ValueError("One unambiguous item line required in order and receipt")
+    unqualified(rq)
+    unqualified(dq)
     net(rq)
     # This primitive intentionally handles an explicit minimum, not exact or maximum obligations.
     if not re.search(r"\bminimum\b|\bat least\b", rq.lower()):
         raise ValueError("Explicit minimum required")
     required = decimal_mg(req["amount"], req["unit"])
     pair(rq, req["amount"], req["unit"])
+    mass_pair(rq, req["amount"], req["unit"])
+    if not re.search(r"\b(?:minimum(?: of)?|at least)\s+" + re.escape(req["amount"]) + r"\s+" + unit_pattern(req["unit"]) + r"\b", rq.lower()):
+        raise ValueError("Minimum must bind to selected amount")
     pair(dq, rec["amount"], rec["unit"])
+    if not re.search(r"\b(?:delivered|received)\s+" + re.escape(rec["amount"]) + r"\s+" + unit_pattern(rec["unit"]) + r"\b", dq.lower()):
+        raise ValueError("Actual receipt must bind to selected amount")
     if not isinstance(links, list) or len(links) > 2:
         raise ValueError("Too many packaging conversions")
     trail = []
@@ -122,6 +146,7 @@ def normalize_facts(raw, data):
         if links or mass is not None:
             raise ValueError("Direct mass needs no packaging conversion")
         net(dq)
+        mass_pair(dq, rec["amount"], rec["unit"])
         delivered = decimal_mg(rec["amount"], rec["unit"])
     else:
         if rec["unit"] not in PACK:
@@ -134,8 +159,12 @@ def normalize_facts(raw, data):
             if parent != current or child not in PACK or child in seen:
                 raise ValueError("Broken or cyclic package chain")
             q = evidence(data["spec"], link["line"], data["sku"])
+            unqualified(q)
             factor = count(link["amount"])
-            if not re.search(r"(?<![\w.,])" + re.escape(link["amount"]) + r"\s+" + unit_pattern(child) + r"\s+per\s+" + unit_pattern(parent) + r"\b", q.lower()):
+            relation = r"(?<![\w.,+-])[0-9]+\s+" + unit_pattern(child) + r"\s+per\s+" + unit_pattern(parent) + r"\b"
+            if sum(len(re.findall(relation, line.lower())) for line in item_lines(data["spec"], data["sku"])) != 1:
+                raise ValueError("Missing or conflicting packaging factor")
+            if not re.search(r"(?<![\w.,+-])" + re.escape(link["amount"]) + r"\s+" + unit_pattern(child) + r"\s+per\s+" + unit_pattern(parent) + r"\b", q.lower()):
                 raise ValueError("Packaging factor is not in source")
             quantity *= factor
             if quantity > 10**12:
@@ -147,9 +176,13 @@ def normalize_facts(raw, data):
         if mass["per"] != current:
             raise ValueError("Mass not specified for leaf package")
         mq = evidence(data["spec"], mass["line"], data["sku"])
+        unqualified(mq)
         net(mq)
+        relation = r"(?<![\w.,+-])[0-9]+(?:\.[0-9]+)?\s+(?:mg|g|kg)\s+net\s+per\s+" + unit_pattern(current) + r"\b"
+        if sum(len(re.findall(relation, line.lower())) for line in item_lines(data["spec"], data["sku"])) != 1:
+            raise ValueError("Missing or conflicting net mass factor")
         leaf_mg = decimal_mg(mass["amount"], mass["unit"])
-        if not re.search(r"(?<![\w.,])" + re.escape(mass["amount"]) + r"\s+" + unit_pattern(mass["unit"]) + r"\s+net\s+per\s+" + unit_pattern(current) + r"\b", mq.lower()):
+        if not re.search(r"(?<![\w.,+-])" + re.escape(mass["amount"]) + r"\s+" + unit_pattern(mass["unit"]) + r"\s+net\s+per\s+" + unit_pattern(current) + r"\b", mq.lower()):
             raise ValueError("Net mass per leaf is not in source")
         delivered = quantity * leaf_mg
         trail.append({"line":mass["line"],"leaf":current,"leaf_mg":leaf_mg,"quote":mq})

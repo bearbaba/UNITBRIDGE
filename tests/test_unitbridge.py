@@ -80,3 +80,18 @@ def test_wrong_sku_and_gross_fail_closed(direct_vm,direct_deploy,direct_alice):
     with direct_vm.expect_revert("No valid grounded extraction"):
         c.reconcile("case-a")
     assert c.get_certificate("case-a")==""
+
+
+def test_conflicting_factors_do_not_create_certificate(direct_vm,direct_deploy,direct_alice):
+    c=setup(direct_vm,direct_deploy,direct_alice,spec=SPEC+"\nSKU-A: 24 packs per carton.")
+    mock(direct_vm,FACTS)
+    with direct_vm.expect_revert("No valid grounded extraction"):
+        c.reconcile("case-a")
+    assert c.get_certificate("case-a")==""
+
+def test_negated_receipt_is_not_actual_delivery(direct_vm,direct_deploy,direct_alice):
+    c=setup(direct_vm,direct_deploy,direct_alice,receipt="SKU-A: not delivered 2 cartons.")
+    mock(direct_vm,FACTS)
+    with direct_vm.expect_revert("No valid grounded extraction"):
+        c.reconcile("case-a")
+    assert c.get_certificate("case-a")==""
