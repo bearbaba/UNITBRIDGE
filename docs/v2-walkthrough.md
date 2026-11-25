@@ -1,4 +1,4 @@
-# V2 Studionet walkthrough (expected, not yet executed)
+# UNITBRIDGE — Studionet walkthrough (expected, not yet executed)
 
 Deploy UnitBridge (no args); deploy DeliveryLedger(anchor_address=UnitBridge address). Use buyer A and supplier B.
 
