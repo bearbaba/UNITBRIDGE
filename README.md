@@ -1,31 +1,15 @@
-# UNITBRIDGE — Consensus-verified quantity reconciliation
+# UNITBRIDGE — Intelligent sensor interoperability
 
-A reusable GenLayer primitive for reconciling minimum **net mass** obligations against delivery documents with inconsistent units and nested package sizes. AI extracts material facts; exact integer arithmetic decides the result. No frontend, model API key, payment or oracle required.
+Two Intelligent Contracts bridge heterogeneous temperature telemetry without a document compiler or bilateral approval workflow.
 
-## Two linked Intelligent Contracts
+- **UnitBridge** registers immutable source profiles. GenLayer leader and independent validators classify a single-line sensor description as absolute AIR, SURFACE, LIQUID or REVIEW. Explicit C/F/K units are not inferred. Exact affine conversion produces integer ticks (1 tick = 1/9000 K) and uncertainty intervals.
+- **SensorFusion** pins the actual registry contract. A round selects 2–5 active source IDs, distinct wallet owners, the same declared site and semantic kind, and a strict majority quorum. Each owner submits a reading once. When all submit, deterministic interval sweep identifies the unique maximum-support interval, reports excluded sources, or returns CONFLICT / REVIEW without a fabricated aggregate. No signer approves another's reading.
 
-**UnitBridge** reconciles each evidence bundle using independent validator extraction and exact mg arithmetic. **DeliveryLedger** reads actual certificates and source from the configured UnitBridge contract, checks protocol and SHA-256 input binding, and anchors a single order/SKU and packaging specification. Supplier accepts the order; buyer proposes individually reconciled deliveries; supplier confirms each before any quantity is credited. Cumulative received, remaining and overage are deterministic. Order, certificate and receipt IDs cannot be reused; declined batches reserve their IDs; max 256 batches. No additional batches after fulfillment. Receipt IDs are unique per buyer, and source headers bind them. These protections cannot establish physical delivery or detect colluding parties inventing fresh receipt identifiers. No custody or payments.
+## Live walkthrough
+See [Studio steps](docs/walkthrough.md) and [evidence](docs/evidence.md). All inputs fit single-line Studio fields; integers represent thousandths of the declared unit. No frontend, API keys, payments or mainnet.
 
-Deploy UnitBridge first, then DeliveryLedger with its actual address. Use `freeze_delivery` for ledger-eligible cases. See [Studionet walkthrough](docs/v2-walkthrough.md).
+## Trust and limits
+Profiles, site, time-window labels, readings and uncertainties are wallet-attested metadata; no physical sensor authentication, synchronization, calibration guarantee or independent identity proof. Distinct addresses are not proof of distinct people. AI consensus classifies labels, not physical truth, and can be wrong. The caller selects the sources; no automatic discovery. All selected sources must report, so absent sources can stall a round. Source IDs are first-come, immutable; select known IDs and owners. Only absolute temperature in C/F/K, intervals within 0–500 K and uncertainty at most 10 K. The result is an agreement interval, not a calibrated estimate or safety-critical recommendation. No timestamps or external data.
 
-## Example (synthetic)
-Deploy `contracts/UnitBridge.py` in [GenLayer Studio](https://studio.genlayer.com/), no constructor args. Use Studionet test tokens.
-1. `freeze_case("unit-01", "SKU-A", "SKU-A: minimum 5.5 kg net mass required.", "SKU-A: delivered 2 cartons.", "SKU-A: 12 packs per carton.\\nSKU-A: 250 g net per pack.")` — use an actual newline between the two spec lines.
-2. `reconcile("unit-01")` from the same wallet; wait for finality and successful execution.
-3. Read `get_case("unit-01")` and `get_certificate("unit-01")`.
-Expected: 2 × 12 × 250 g = 6,000,000 mg; required 5,500,000 mg; delta +500,000 mg; MEETS_MINIMUM. Exact source lines and conversion trail appear in certificate.
-4. New case with receipt "SKU-A: delivered 5400 g net." and empty spec → SHORTFALL, delta -100,000 mg.
-5. New case with only gross mass or missing packaging factor → REVIEW (or invalid model extraction rejected; no false certificate).
-
-## State and consensus
-The wallet freezes item ID, order, receipt and packaging specification. SHA-256 binds the exact input; only that wallet may reconcile, once. Each validator independently extracts obligation, actual receipt and conversion path from the same frozen documents. The deterministic normalizer validates exact full evidence lines, SKU boundaries, numeric-unit tokens, ordered explicit per-package factors, no cycles and explicit net mass. Validators compare canonical fields including evidence and computed quantities. The contract applies exact milligram arithmetic; no float, model-generated verdict, or fabricated unit factor. Model disagreement prevents agreement; valid consensus REVIEW produces no delta.
-
-## Bounds and trust
-One SKU, one explicit minimum net mass requirement, one actual delivered quantity. Each cited line must contain SKU; use one item line in each order and receipt, explicit `minimum`/`at least` and `delivered`/`received` markers, and attach `net` to the mass token. Duplicate factors and conditional or negated evidence fail closed. Supports mg/g/kg; direct net mass or carton/pack/case/box/bag/pallet/unit counts with at most two nested factors. Packaging evidence uses explicit "12 packs per carton" and "250 g net per pack". Integers for packages, exact mg precision, positive quantities, maximum 10^18 mg. No density, net/gross inference, multi-lot aggregation, tolerance, exact/max order, legal settlement or proof of physical delivery. Source documents are caller-attested, not independently authenticated. Model consensus is not proof that documents are true.
-
-## Reproduce tests
-`python -m pip install genvm-linter==0.11.1rc2 genlayer-test==0.30.0 "pytest>=8,<9"`
-`genvm-lint lint contracts/UnitBridge.py`
-`genvm-lint check contracts/UnitBridge.py`
-`pytest -q tests/`
-Direct-mode tests mock model extraction and replay validators; actual AI consensus requires separate Studionet verification. See [evidence status](docs/evidence.md).
+## Tests
+CI uses genvm-linter 0.11.1rc2, genlayer-test 0.30.0 and pytest. Direct-mode tests mock AI outputs and registry reads; real Studio deployment and consensus are separate evidence.
