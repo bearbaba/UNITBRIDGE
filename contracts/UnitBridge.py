@@ -204,12 +204,21 @@ class UnitBridge(gl.contract.Contract):
 
     @gl.public.write
     def freeze_case(self, case_id: str, sku: str, order: str, receipt: str, spec: str) -> None:
+        self._freeze(case_id,sku,order,receipt,spec,"","")
+
+    @gl.public.write
+    def freeze_delivery(self, case_id: str, sku: str, order_id: str, receipt_id: str, order: str, receipt: str, spec: str) -> None:
+        if not valid_id(order_id) or not valid_id(receipt_id) or not order.startswith("Order: "+order_id+"\n") or not receipt.startswith("Receipt: "+receipt_id+"\n"):
+            raise gl.vm.UserError("Document IDs must match exact first lines")
+        self._freeze(case_id,sku,order,receipt,spec,order_id,receipt_id)
+
+    def _freeze(self, case_id, sku, order, receipt, spec, order_id, receipt_id):
         if not valid_id(case_id) or self.cases.get(case_id, "") or not valid_id(sku):
             raise gl.vm.UserError("Invalid or duplicate case/item ID")
         if not order.strip() or not receipt.strip() or any(len(x)>3500 or len(x.splitlines())>32 for x in (order,receipt,spec)):
             raise gl.vm.UserError("Documents outside bounds")
         data = {"case_id":case_id,"owner":gl.message.sender_address.as_hex.lower(),"sku":sku,
-                "order":order,"receipt":receipt,"spec":spec,"policy":"NET_MASS_MINIMUM_V1"}
+                "order":order,"receipt":receipt,"spec":spec,"order_id":order_id,"receipt_id":receipt_id,"policy":"NET_MASS_MINIMUM_V1"}
         data["input_sha256"] = digest(json.dumps(data, sort_keys=True))
         self.cases[case_id] = json.dumps(data, sort_keys=True)
 
@@ -244,6 +253,10 @@ class UnitBridge(gl.contract.Contract):
             cert["delta_mg"] = facts["delivered_mg"] - facts["required_mg"]
             cert["status"] = "MEETS_MINIMUM" if cert["delta_mg"] >= 0 else "SHORTFALL"
         self.certificates[case_id] = json.dumps(cert, sort_keys=True)
+
+    @gl.public.view
+    def get_protocol_version(self) -> str:
+        return "unitbridge-v2"
 
     @gl.public.view
     def get_case(self, case_id: str) -> str:
