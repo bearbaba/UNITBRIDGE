@@ -16,6 +16,6 @@ jobs:
           python-version: "3.12"
       - run: python -m py_compile contracts/*.py
       - run: python -m pip install --no-cache-dir "genvm-linter==0.11.1rc2" "genlayer-test==0.30.0" "pytest>=8,<9"
-      - run: genvm-lint lint contracts/*.py
-      - run: genvm-lint check contracts/*.py
+      - run: genvm-lint lint contracts/UnitBridge.py && genvm-lint lint contracts/DeliveryLedger.py
+      - run: genvm-lint check contracts/UnitBridge.py && genvm-lint check contracts/DeliveryLedger.py
       - run: pytest -q tests/

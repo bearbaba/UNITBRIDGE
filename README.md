@@ -2,6 +2,12 @@
 
 A reusable GenLayer primitive for reconciling minimum **net mass** obligations against delivery documents with inconsistent units and nested package sizes. AI extracts material facts; exact integer arithmetic decides the result. No frontend, model API key, payment or oracle required.
 
+## V2: two linked Intelligent Contracts
+
+**UnitBridge** reconciles each evidence bundle using independent validator extraction and exact mg arithmetic. **DeliveryLedger** reads actual certificates and source from the configured UnitBridge contract, checks protocol and SHA-256 input binding, and anchors a single order/SKU and packaging specification. Supplier accepts the order; buyer proposes individually reconciled deliveries; supplier confirms each before any quantity is credited. Cumulative received, remaining and overage are deterministic. Order, certificate and receipt IDs cannot be reused; declined batches reserve their IDs; max 256 batches. No additional batches after fulfillment. Receipt IDs are unique per buyer, and source headers bind them. These protections cannot establish physical delivery or detect colluding parties inventing fresh receipt identifiers. No custody or payments.
+
+Deploy UnitBridge first, then DeliveryLedger with its actual address. Use V2 `freeze_delivery` for ledger-eligible cases. See [V2 walkthrough](docs/v2-walkthrough.md).
+
 ## Example (synthetic)
 Deploy `contracts/UnitBridge.py` in [GenLayer Studio](https://studio.genlayer.com/), no constructor args. Use Studionet test tokens.
 1. `freeze_case("unit-01", "SKU-A", "SKU-A: minimum 5.5 kg net mass required.", "SKU-A: delivered 2 cartons.", "SKU-A: 12 packs per carton.\\nSKU-A: 250 g net per pack.")` — use an actual newline between the two spec lines.
